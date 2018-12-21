@@ -1,0 +1,16 @@
+extends layout
+
+block content
+	h1 BQATR
+
+
+	form(method='POST' action='/testrunner')
+		div.form-group
+			label(for='url') URL:
+			input#url.form-control(type='text', placeholder='http://' name='url')
+	
+			label(for='nav') Nav selector:
+			input#nav.form-control(type='text', placeholder='nav li' name='nav')
+		
+		button.btn.btn-primary(type='submit') Check Url
+	div.output

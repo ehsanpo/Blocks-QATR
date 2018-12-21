@@ -1,0 +1,103 @@
+extends layout
+
+block content
+	h1 Checklist
+	div.wrapper-m
+		div.list
+			p.screenshots Screenshots 
+				span.check #{rapport.BQATR.SC}
+			p.description Meta - Description
+				if	rapport.BQATR.meta_description
+					span.error 
+				else
+					span.check
+
+			p.fb_image Meta - FB Share Image 
+				if	rapport.BQATR.meta_fb_img
+					span.error
+				else
+					span.check 
+			p.images_char Bilder - öäå
+				if	rapport.BQATR.image_char
+					span.error #{rapport.BQATR.image_char}
+				else
+					span.check #{rapport.BQATR.image_char}
+
+			p.images_alt Bilder - Alternativ text
+				if	rapport.BQATR.image_alt
+					span.error #{rapport.BQATR.image_alt}
+				else
+					span.check #{rapport.BQATR.image_alt}
+
+			p.links_404 Links - 404 
+				if	rapport.BQATR.links_404 
+					span.error #{rapport.BQATR.links_404 }
+				else
+					span.check #{rapport.BQATR.links_404 }
+
+			p.links_empty Links - Empty
+				if	rapport.BQATR.links_empty
+					span.error #{rapport.BQATR.links_empty}
+				else
+					span.check #{rapport.BQATR.links_empty}
+
+			p HTML Validation
+				if	rapport.BQATR.validate_html
+					span.error #{rapport.BQATR.validate_html}
+				else
+					span.check #{rapport.BQATR.validate_html}
+			
+	.details
+		.screenshots-block.view_block
+			ul
+				each val in rapport.result
+					- var img_src = val.SC;
+					img(src= img_src[0] )
+
+		.description-block.view_block
+			p #{rapport.BQATR.Description}
+
+
+		.fb_image-block.view_block
+			if (rapport.BQATR.fb_img)
+				p #{rapport.BQATR.fb_img}
+			else
+				p No Image
+		.html_validate.view_block
+			each val in rapport.BQATR.HTML_validate.messages
+				div(class=val.type)
+					p  #{val.message}  
+						span #{val.extract}
+		.all-block
+			each val, key in rapport.result
+				
+				.images_alt-block.view_block
+					h4 #{key}
+					each val2, key2 in val.img_alt
+						img.thumb(src= val2)
+
+				.images_char-block.view_block
+					h4 #{key}
+					each val2, key2 in val.img_alt
+						img.thumb(src= val2)
+
+				if val.links_404
+					.links_404-block.view_block
+						h4 #{key}
+						each val3 in val.links_404
+							p #{val3}
+			
+				if val.links_empty
+					.links_empty-block.view_block
+					
+						h4 #{key}
+						each val3 in val.links_empty
+							p #{val3}
+
+
+
+
+
+
+
+

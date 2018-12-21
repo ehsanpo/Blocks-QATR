@@ -2,23 +2,44 @@ const puppeteer = require('puppeteer');
 const urlExists = require('url-exists-async-await');
 const validator = require('html-validator');
 
-let page;
-let browser;
-//Main Rapport
-let rapport=[]
+let page,
+	browser,
+	current_page = "home",
+	defaul_navigation = '.navigation__primary li',
+	rapport = [], //Main Rapport
+	args = process.argv.slice(2),
+	input_url = args[0];
+
+
+if (args.length == 0) {
+	console.log('No URL input');
+	process.exit()
+}
+
+if (args.length >= 2) {
+	console.log('Using custom navigation scope');
+	defaul_navigation = args[1]
+}
+
+
+
 
 //Rapport generator
 let RP={
 	add: function(key, massage){
-		if(!rapport[key]  && typeof rapport[key] == 'undefined' ) {
-			rapport[key] = [];
+
+		if(!rapport[current_page]  && typeof rapport[current_page] == 'undefined' ) {
+			rapport[current_page]= []	
 		}
-		rapport[key].push(massage);
+		if(!rapport[current_page][key]  && typeof rapport[current_page][key] == 'undefined' ) {
+			rapport[current_page][key] = [];
+		}
+		rapport[current_page][key].push(massage);
 	}
 };
 
 //test runner
-var TR = {
+let TR = {
  
 	rapport: [],
  
@@ -32,10 +53,10 @@ var TR = {
 	},
 	img_check: async function(strings){
 
-		var regex1 = /[%öäåÖÄÅ]/g;
-		var regex2 = /[^data:image]+$/g;
+		let regex1 = /[%öäåÖÄÅ]/g;
+		let regex2 = /[^data:image]+$/g;
 
-		for (var i = 0; i < strings.length; i++) {
+		for (let i = 0; i < strings.length; i++) {
 			if (strings[i].url.match(regex1) && !strings[i].url.match(regex2) ) { 
 				RP.add('img_char', strings[i].url );
 			}
@@ -67,7 +88,7 @@ var TR = {
 	},
 	links: async function(links){
 
-		for (var i = 0; i < links.length; i++) {
+		for (let i = 0; i < links.length; i++) {
 			//check for empty links
 			if ( links[i].url == '' ) {
 				RP.add('links_empty', '!! Empty link on : ' + links[i].title  );
@@ -90,14 +111,14 @@ var TR = {
 		RP.add('HTML_validate', json );
 	}
 };
-
+let all ="1" ;
 //Collector
-var CL = {
+let CL = {
 	nav: async function(){
-		return result = await page.evaluate(() => {
+		return result = await page.evaluate((defaul_navigation) => {
 			try {
-				var data = [];
-				$('.navigation__primary li').each(function() {
+				let data = [];
+				$(defaul_navigation).each(function() {
 					const url = $(this).find('a').attr('href');
 					const title = $(this).find('a').text();
 					data.push({
@@ -107,9 +128,9 @@ var CL = {
 				});
 				return data; // Return our data array
 			} catch(err) {
-				reject(err.toString());
+				console.log(err);
 			}
-		});
+		},defaul_navigation);
 
 	},
 	img: async function(){
@@ -120,7 +141,7 @@ var CL = {
 				var img = [];
 				$('img').each(function() {
 
-					let url = $(this).attr('src');
+					var url = $(this).attr('src');
 					if (url.indexOf('data:image/gif')==0) {
 						url =  $(this).prop('currentSrc');
 					}
@@ -130,7 +151,7 @@ var CL = {
 						alt:  $(this).attr('alt'),
 					});
 				});
-
+				return img;
 				//check bg images
 				var bg_sec = $('section, div').filter(function(){
 					return this.style.backgroundImage != ''
@@ -143,11 +164,10 @@ var CL = {
 						alt: "bg-image"
 					});
 				}
-
+				all = "err";
 				return img; // Return our data array
-
 			} catch(err) {
-				console.log(err);
+				return err;
 			}
 		});
 	},
@@ -156,7 +176,7 @@ var CL = {
 			try {
 				
 				// check <a>
-				var links = [];
+				let links = [];
 				$('a').each(function() {
 
 					const title = $(this).text();
@@ -170,9 +190,7 @@ var CL = {
 						});
 					}
 				});
-
 				return links; // Return our data array
-
 			} catch(err) {
 				console.log('err');
 				console.log(err);
@@ -183,7 +201,7 @@ var CL = {
 
 //Main run function
 async function run(domain) {
-   browser = await puppeteer.launch({ headless: true });
+   browser = await puppeteer.launch({ headless: false });
 
 	page = await browser.newPage();
 
@@ -195,39 +213,38 @@ async function run(domain) {
 
 	//validate html
 	await TR.validate_html(domain);
+	await TR.meta();
+
+
 
 	//loop navigation
-	for (var i = 0; i < nav.length; i++) {
-
+	for (let i = 0; i < nav.length; i++) {
+		current_page = result[i].title;
 		//change page
-		 //await page.goto(result[i].url);
+		await page.goto(result[i].url,{waitUntil: 'networkidle2'});
+		await page.addScriptTag({url: 'https://code.jquery.com/jquery-3.2.1.min.js'})
 
-		//  //take screenshots
-		// await TR.screenshot(result[i]);
+		//take screenshots
+		await TR.screenshot(result[i]);
 
-		// //collect images 
-		// let image_list = await CL.img();
+		//collect images & check images
+		let image_list = await CL.img();
+		await TR.img_check(image_list);
 
-		// //check images
-		// await TR.img_check(image_list);
-		
-		// await TR.meta();
-
-		// let links = await CL.links();
-		// console.log(links);
-		// await TR.links(links);
-
+		//check links &check links
+		let links = await CL.links();
+		console.log(links);
+		await TR.links(links);
 	
 	}
 
-	console.log(rapport);
+	console.log(rapport );
 	browser.close()
 }
 
 
 //start
-run('http://t1.gg-dev.se/');
-
+run(input_url);
 
 
 //helper
@@ -242,7 +259,10 @@ const urlVal = async(data) => {
 }
 //helper
 let filename=function(sstring, extension){
-	var s= sstring.replace(/\\/g, '/');
+	let s= sstring.replace(/\\/g, '/');
 	s= s.substring(s.lastIndexOf('/')+ 1);
 	return extension? s.replace(/[?#].+$/, ''): s.split('.')[0];
 }
+
+
+

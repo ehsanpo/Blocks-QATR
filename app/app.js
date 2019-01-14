@@ -370,13 +370,19 @@ let CL = {
   }
 }
 
+
+
+
 //Main run function
 async function run(domain,ws) {
   full_domain = domain;
   send_data('check','Checking domain: ' + domain ,ws);
   
+
+
   browser = await puppeteer.launch({ headless: true });
   page = await browser.newPage();
+  page.setViewport({ width: 1366, height: 768});
 
   await page.goto(domain,{waitUntil: 'networkidle2'});
   await page.addScriptTag({url: 'https://code.jquery.com/jquery-3.2.1.min.js'})

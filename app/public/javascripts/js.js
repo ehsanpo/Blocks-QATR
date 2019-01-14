@@ -90,6 +90,14 @@
 					var data= $('#url').val().replace(/http?:\/\//i, "");
 
 					console.log(data);
+					setTimeout(function(){
+
+						var urltogo = String( $('#url').val()  ).replace( 'http://', "" ).replace('https://', "" );
+						document.location.href = document.location.href  +  'testrunner/' + urltogo
+
+					 }, 2000);
+
+					 
 				}
 				break;
 			default:

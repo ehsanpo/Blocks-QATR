@@ -394,7 +394,7 @@ async function run(domain,ws) {
   await TR.meta(ws);
 
   //validate html
-  await TR.validate_html(domain,ws);
+  //await TR.validate_html(domain,ws);
  
 
   //loop navigation

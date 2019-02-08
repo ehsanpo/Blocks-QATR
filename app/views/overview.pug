@@ -41,11 +41,11 @@ block content
 				else
 					span.check #{rapport.BQATR.links_empty}
 
-			p HTML Validation
-				if	rapport.BQATR.validate_html
-					span.error #{rapport.BQATR.validate_html}
-				else
-					span.check #{rapport.BQATR.validate_html}
+			//- p HTML Validation
+			//- 	if	rapport.BQATR.validate_html
+			//- 		span.error #{rapport.BQATR.validate_html}
+			//- 	else
+			//- 		span.check #{rapport.BQATR.validate_html}
 			
 	.details
 		.screenshots-block.view_block
@@ -63,11 +63,11 @@ block content
 				p #{rapport.BQATR.fb_img}
 			else
 				p No Image
-		.html_validate.view_block
-			each val in rapport.BQATR.HTML_validate.messages
-				div(class=val.type)
-					p  #{val.message}  
-						span #{val.extract}
+		//- .html_validate.view_block
+		//- 	each val in rapport.BQATR.HTML_validate.messages
+		//- 		div(class=val.type)
+		//- 			p  #{val.message}  
+		//- 				span #{val.extract}
 		.all-block
 			each val, key in rapport.result
 				
